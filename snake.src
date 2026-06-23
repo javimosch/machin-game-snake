@@ -1,0 +1,179 @@
+// machin-game-snake — the classic Snake, written in machin (MFL), compiled to a
+// single native binary. Runs in your terminal: arrow-feel WASD/HJKL movement, a
+// growing snake, food, score, and a real-time frame loop.
+//
+//   machin-game-snake          play (default 24x16 board)
+//
+// Controls: w/a/s/d or h/j/k/l to steer, q to quit.
+//
+// It renders with ANSI escapes (built from a raw ESC byte via from_hex), times
+// the frame loop with sleep, and places food with rand_bytes — all existing
+// machin builtins. The ONLY thing it needs from the language that did not exist
+// before is real terminal input: raw_mode() to put the tty in cbreak/no-echo
+// mode, and read_key() for a non-blocking single-key read. Those two builtins
+// (added in machin v0.41.0) are what this game surfaced — and they unlock every
+// future TUI in the ecosystem.
+
+// ---- ANSI helpers (ESC is byte 0x1b; strings have no \x escape, so build it) ----
+
+func ESC() (s) { s = bytes_str(from_hex("1b")) }
+func clear_screen() (s) { s = ESC() + "[2J" }
+func cursor_home() (s) { s = ESC() + "[H" }
+func hide_cursor() (s) { s = ESC() + "[?25l" }
+func show_cursor() (s) { s = ESC() + "[?25h" }
+func color(n) (s) { s = ESC() + "[" + str(n) + "m" }
+func reset_color() (s) { s = ESC() + "[0m" }
+
+// ---- board geometry: a cell is packed as y*100 + x (board stays well under 100) ----
+
+func cell(x, y) (c) { c = y * 100 + x }
+func cx(c) (x) { x = c % 100 }
+func cy(c) (y) { y = c / 100 }
+
+// ---- snake helpers ----
+
+// hits_self reports whether cell c lands on the snake. When the snake is NOT
+// eating this frame, its tail (index 0) vacates, so moving onto it is legal.
+func hits_self(snake, c, eating) (b) {
+    b = false
+    start := 0
+    if eating == false { start = 1 }
+    i := start
+    while i < len(snake) {
+        if snake[i] == c { b = true }
+        i = i + 1
+    }
+}
+
+func on_snake(snake, c) (b) {
+    b = false
+    i := 0
+    while i < len(snake) {
+        if snake[i] == c { b = true }
+        i = i + 1
+    }
+}
+
+// drop_first returns the snake minus its tail (index 0) — MFL has no s[1:].
+func drop_first(xs) (out) {
+    out = []int{}
+    i := 1
+    while i < len(xs) {
+        out = append(out, xs[i])
+        i = i + 1
+    }
+}
+
+// place_food picks a uniformly-random empty cell.
+func place_food(snake, w, h) (c) {
+    c = 0
+    ok := false
+    while ok == false {
+        r := rand_bytes(2)
+        x := byte_at(r, 0) % w
+        y := byte_at(r, 1) % h
+        c = cell(x, y)
+        if on_snake(snake, c) == false { ok = true }
+    }
+}
+
+// ---- rendering: build the whole frame as one string, then print once ----
+
+func border(w) (s) {
+    s = "+"
+    i := 0
+    while i < w { s = s + "-"  i = i + 1 }
+    s = s + "+"
+}
+
+func render(snake, food, w, h, score) {
+    head := snake[len(snake) - 1]
+    out := cursor_home() + border(w) + "\n"
+    y := 0
+    while y < h {
+        out = out + "|"
+        x := 0
+        while x < w {
+            c := cell(x, y)
+            if c == head {
+                out = out + color(92) + "@" + reset_color()
+            } else if on_snake(snake, c) {
+                out = out + color(32) + "o" + reset_color()
+            } else if c == food {
+                out = out + color(91) + "*" + reset_color()
+            } else {
+                out = out + " "
+            }
+            x = x + 1
+        }
+        out = out + "|\n"
+        y = y + 1
+    }
+    out = out + border(w) + "\n"
+    out = out + " score " + str(score) + "    wasd/hjkl move | q quit\n"
+    print(out)
+    flush()
+}
+
+// ---- the game ----
+
+func main() {
+    w := 24
+    h := 16
+
+    raw_mode(1)
+    print(clear_screen() + hide_cursor())
+
+    // snake starts length 3 in the middle, heading right (head is the last cell)
+    snake := []int{}
+    snake = append(snake, cell(5, 8))
+    snake = append(snake, cell(6, 8))
+    snake = append(snake, cell(7, 8))
+    dx := 1
+    dy := 0
+    food := place_food(snake, w, h)
+    score := 0
+    alive := true
+
+    render(snake, food, w, h, score)
+
+    while alive {
+        // non-blocking input; only perpendicular turns (which also blocks 180s)
+        k := read_key()
+        if k == "q" { alive = false }
+        if k == "a" || k == "h" { if dx == 0 { dx = -1  dy = 0 } }
+        if k == "d" || k == "l" { if dx == 0 { dx = 1   dy = 0 } }
+        if k == "w" || k == "k" { if dy == 0 { dx = 0   dy = -1 } }
+        if k == "s" || k == "j" { if dy == 0 { dx = 0   dy = 1 } }
+
+        if alive {
+            head := snake[len(snake) - 1]
+            nx := cx(head) + dx
+            ny := cy(head) + dy
+            if nx < 0 || nx >= w || ny < 0 || ny >= h {
+                alive = false
+            } else {
+                nh := cell(nx, ny)
+                eating := nh == food
+                if hits_self(snake, nh, eating) {
+                    alive = false
+                } else {
+                    snake = append(snake, nh)
+                    if eating {
+                        score = score + 1
+                        food = place_food(snake, w, h)
+                    } else {
+                        snake = drop_first(snake)
+                    }
+                    render(snake, food, w, h, score)
+                    sleep(110)
+                }
+            }
+        }
+    }
+
+    raw_mode(0)
+    print(show_cursor())
+    println("")
+    println("game over - score " + str(score))
+}
