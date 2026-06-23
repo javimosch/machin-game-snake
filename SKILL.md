@@ -7,6 +7,8 @@ description: Build, run, and modify machin-game-snake — a terminal Snake game 
 
 The classic Snake, written in [machin](https://github.com/javimosch/machin) (MFL) and compiled to one native binary. It is the reference example for **interactive terminal programs** in machin.
 
+> The shared game-dev setup, build-and-verify workflow, and the cross-cutting caveats/gotchas live in the canonical **[machin-gamedev skill](https://github.com/javimosch/machin/blob/main/skills/machin-gamedev/SKILL.md)** (terminal + GUI + audio). This file is Snake's specifics.
+
 ## Build & run
 
 ```bash
