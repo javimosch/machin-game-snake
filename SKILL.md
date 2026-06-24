@@ -1,9 +1,9 @@
 ---
-name: machin-game-snake
-description: Build, run, and modify machin-game-snake — a terminal Snake game written in machin (MFL). Use when working on this repo, or as a worked example of real-time terminal input (raw_mode/read_key), ANSI rendering, and the frame-loop pattern in MFL.
+name: machin-game-demo-snake
+description: Build, run, and modify machin-game-demo-snake — a terminal Snake game written in machin (MFL). Use when working on this repo, or as a worked example of real-time terminal input (raw_mode/read_key), ANSI rendering, and the frame-loop pattern in MFL.
 ---
 
-# machin-game-snake
+# machin-game-demo-snake
 
 The classic Snake, written in [machin](https://github.com/javimosch/machin) (MFL) and compiled to one native binary. It is the reference example for **interactive terminal programs** in machin.
 
@@ -12,8 +12,8 @@ The classic Snake, written in [machin](https://github.com/javimosch/machin) (MFL
 ## Build & run
 
 ```bash
-./build.sh                 # machin encode snake.src -> snake.mfl, then machin build -> ./machin-game-snake
-./machin-game-snake        # play
+./build.sh                 # machin encode snake.src -> snake.mfl, then machin build -> ./machin-game-demo-snake
+./machin-game-demo-snake        # play
 ```
 
 Requires **machin v0.41.0+** (for the `raw_mode`/`read_key` builtins). `MACHIN=/path/to/machin ./build.sh` to use a specific compiler.

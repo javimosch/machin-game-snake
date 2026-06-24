@@ -1,8 +1,8 @@
-// machin-game-snake — the classic Snake, written in machin (MFL), compiled to a
+// machin-game-demo-snake — the classic Snake, written in machin (MFL), compiled to a
 // single native binary. Runs in your terminal: arrow-feel WASD/HJKL movement, a
 // growing snake, food, score, and a real-time frame loop.
 //
-//   machin-game-snake          play (default 24x16 board)
+//   machin-game-demo-snake          play (default 24x16 board)
 //
 // Controls: w/a/s/d or h/j/k/l to steer, q to quit.
 //

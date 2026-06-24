@@ -1,4 +1,4 @@
-# machin-game-snake
+# machin-game-demo-snake
 
 The classic **Snake**, written in **[machin](https://github.com/javimosch/machin)** (MFL) and compiled to a single native binary. It runs in your terminal — a growing snake, food, score, and a real-time frame loop, in ~190 lines of one-declaration-per-line MFL.
 
@@ -33,13 +33,13 @@ Everything else the game needs already existed: ANSI rendering (the ESC byte is 
 Needs the `machin` compiler (**v0.41.0+**, for `raw_mode`/`read_key`) and a C compiler.
 
 ```bash
-./build.sh            # → ./machin-game-snake
+./build.sh            # → ./machin-game-demo-snake
 ```
 
 ## Play
 
 ```bash
-./machin-game-snake
+./machin-game-demo-snake
 ```
 
 Steer with **`w` `a` `s` `d`** or **`h` `j` `k` `l`**; **`q`** quits. Eat the `*` to grow and score; you die on a wall or on yourself. The terminal is restored on exit.
